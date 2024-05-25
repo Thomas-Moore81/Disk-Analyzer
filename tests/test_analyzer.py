@@ -41,10 +41,10 @@ def analyze_directory():
         print(f"{root} consumes {dirBytes} bytes in {len(files)} its files")
 
     totalGB = totalBytes / (1024**3)
-    print(f"Total gigabytes consumed: {round(totalGB, 2)}")
     print("Directory sizes:", dirsizes)
     print("File sizes:", filesizes)
-
+    print(f"Total gigabytes consumed: {round(totalGB, 2)}")
+    
 def main():
     # root = tk.Tk()
     # root.withdraw()
