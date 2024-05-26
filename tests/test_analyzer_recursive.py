@@ -5,6 +5,7 @@ from os.path import join, getsize
 import ctypes
 from ctypes import wintypes
 import re
+import json
 _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
 _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
 _GetShortPathNameW.restype = wintypes.DWORD
@@ -52,7 +53,6 @@ def get_short_path_name(long_name):
 def analyze_directory_recursive(dir_in):
 
     dirsizes = {}
-    filesizes = {}
 
     dir_split = re.split("/|\\\\", dir_in)
     folder_name = dir_split[-1]
@@ -61,7 +61,10 @@ def analyze_directory_recursive(dir_in):
     totalBytes = 0
     for root, dirs, files in os.walk(dir_in):
         root_short = get_short_path_name(root)
-        dir_dict['__filesizes__'] = sum(getsize(join(root_short, name)) for name in files)
+        filesizes = [getsize(join(root_short, name)) for name in files]
+        dir_dict['__filesizes__'] = filesizes
+        dir_dict['__filenames__'] = files
+        dir_dict['__totfilesize__'] = sum(filesizes)
         for nextdir in dirs:
             dir_dict[nextdir] = analyze_directory_recursive(join(root_short, nextdir))
 
@@ -74,7 +77,8 @@ def main():
     directory = filedialog.askdirectory()
     if not directory:
         return
-    print(analyze_directory_recursive(directory))
+    print(json.dumps(analyze_directory_recursive(directory), indent=4))
+    #print(analyze_directory_recursive(directory))
     # root.mainloop()
 
 if __name__ == "__main__":
