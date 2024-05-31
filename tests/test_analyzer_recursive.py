@@ -23,6 +23,21 @@ def get_short_path_name(long_name):
         else:
             output_buf_size = needed
 
+#Turn nested dict into flat dict for displaying
+def get_plot_data(data):
+    check_folder = "^__.*__$"
+    returndict = {}
+    for key in data.keys():
+        if(not re.search(check_folder, key)):
+            returndict[key] = data[key]["__totdirsize__"]
+
+    returndict["__totfilesize__"] = data["__totfilesize__"]
+    returndict["__filesizes__"] = data["__filesizes__"]
+    returndict["__filenames__"] = data["__filenames__"]
+    returndict["__dirname__"] = data["__dirname__"]
+    returndict["__dirpath__"] = data["__dirpath__"]
+    return returndict
+
 
 # def analyze_directory():
 #     #tkinter dialog box for directory selection
@@ -81,8 +96,10 @@ def main():
     directory = filedialog.askdirectory()
     if not directory:
         return
-    print(json.dumps(analyze_directory_recursive(directory), indent=4))
-    #analyze_directory_recursive(directory)
+    #print(json.dumps(analyze_directory_recursive(directory), indent=4))
+    nested = analyze_directory_recursive(directory)[0]
+    flat = get_plot_data(nested)
+    print(flat)
     #print(analyze_directory_recursive(directory))
     # root.mainloop()
 
