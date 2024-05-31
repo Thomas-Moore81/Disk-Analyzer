@@ -65,11 +65,16 @@ def analyze_directory_recursive(dir_in):
         dir_dict['__filesizes__'] = filesizes
         dir_dict['__filenames__'] = files
         dir_dict['__totfilesize__'] = sum(filesizes)
+        totalSize = dir_dict['__totfilesize__']
         for nextdir in dirs:
-            dir_dict[nextdir] = analyze_directory_recursive(join(root_short, nextdir))
+            nextret = analyze_directory_recursive(join(root_short, nextdir))
+            dir_dict[nextdir] = nextret[0]
+            totalSize = totalSize + nextret[1]
+        
 
+        dir_dict['__totdirsize__'] = totalSize
         break
-    return dir_dict
+    return [dir_dict, totalSize]
 def main():
     # root = tk.Tk()
     # root.withdraw()
@@ -78,6 +83,7 @@ def main():
     if not directory:
         return
     print(json.dumps(analyze_directory_recursive(directory), indent=4))
+    #analyze_directory_recursive(directory)
     #print(analyze_directory_recursive(directory))
     # root.mainloop()
 
