@@ -73,6 +73,7 @@ def analyze_directory_recursive(dir_in):
     folder_name = dir_split[-1]
     dir_path = '/'.join(dir_split[:-1])
     dir_dict = {"__dirname__": folder_name, "__dirpath__": dir_path}
+    totalSize = 0
     for root, dirs, files in os.walk(dir_in):
         root_short = get_short_path_name(root)
         filesizes = [getsize(join(root_short, name)) for name in files]
@@ -88,6 +89,8 @@ def analyze_directory_recursive(dir_in):
 
         dir_dict['__totdirsize__'] = totalSize
         break
+    if "__totdirsize__" not in dir_dict:
+        dir_dict['__totdirsize__'] = 0
     return [dir_dict, totalSize]
 def main():
     # root = tk.Tk()
