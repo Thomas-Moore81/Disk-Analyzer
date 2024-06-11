@@ -6,6 +6,11 @@ import ctypes
 from ctypes import wintypes
 import re
 import json
+import plotly.graph_objects as go
+import plotly.io as pio
+import webbrowser
+import tempfile
+
 _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
 _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
 _GetShortPathNameW.restype = wintypes.DWORD
@@ -25,19 +30,11 @@ def get_short_path_name(long_name):
 
 #Turn nested dict into flat dict for displaying
 def get_plot_data(data):
-    check_folder = "^__.*__$"
     returndict = {}
     for key in data.keys():
-        if(not re.search(check_folder, key)):
+        if not re.match("^__.*__$", key):
             returndict[key] = data[key]["__totdirsize__"]
-
-    returndict["__totfilesize__"] = data["__totfilesize__"]
-    returndict["__filesizes__"] = data["__filesizes__"]
-    returndict["__filenames__"] = data["__filenames__"]
-    returndict["__dirname__"] = data["__dirname__"]
-    returndict["__dirpath__"] = data["__dirpath__"]
     return returndict
-
 
 # def analyze_directory():
 #     #tkinter dialog box for directory selection
@@ -92,6 +89,17 @@ def analyze_directory_recursive(dir_in):
     if "__totdirsize__" not in dir_dict:
         dir_dict['__totdirsize__'] = 0
     return [dir_dict, totalSize]
+
+
+def plot_directory(data_dict):
+    labels = list(data_dict.keys())
+    sizes = list(data_dict.values())
+    fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=0.3)])
+    fig.update_layout(title_text='Directory Size Distribution')
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.html')
+    fig.write_html(temp_file.name)
+    webbrowser.open('file://' + temp_file.name)
+
 def main():
     # root = tk.Tk()
     # root.withdraw()
@@ -100,9 +108,9 @@ def main():
     if not directory:
         return
     #print(json.dumps(analyze_directory_recursive(directory), indent=4))
-    nested = analyze_directory_recursive(directory)[0]
-    flat = get_plot_data(nested)
-    print(flat)
+    nested_data, _ = analyze_directory_recursive(directory)
+    flat_data = get_plot_data(nested_data)
+    plot_directory(flat_data)
     #print(analyze_directory_recursive(directory))
     # root.mainloop()
 
