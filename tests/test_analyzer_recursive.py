@@ -39,6 +39,7 @@ def get_plot_data(data):
     for key in data.keys():
         if not re.match("^__.*__$", key):
             returndict[key] = data[key]["__totdirsize__"]
+    returndict['Local Files'] = data['__totfilesize__']
     return returndict
 
 # def analyze_directory():
