@@ -1,5 +1,7 @@
-import tkinter as tk
-from tkinter import filedialog
+from PyQt5 import QtWidgets
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import QUrl
+import sys
 import os
 from os.path import join, getsize
 import ctypes
@@ -10,6 +12,9 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import webbrowser
 import tempfile
+
+# Initialization for QAplication oject
+app = QtWidgets.QApplication(sys.argv)
 
 _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
 _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
@@ -96,23 +101,21 @@ def plot_directory(data_dict):
     sizes = list(data_dict.values())
     fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=0.3)])
     fig.update_layout(title_text='Directory Size Distribution')
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.html')
-    fig.write_html(temp_file.name)
-    webbrowser.open('file://' + temp_file.name)
+    return fig.to_html(full_html=True, include_plotlyjs='cdn')
+
+def show_plot(html_content):
+    web = QWebEngineView()
+    web.setHtml(html_content)
+    web.show()
+    sys.exit(app.exec_())
 
 def main():
-    # root = tk.Tk()
-    # root.withdraw()
-    #analyze_directory()
-    directory = filedialog.askdirectory()
-    if not directory:
-        return
-    #print(json.dumps(analyze_directory_recursive(directory), indent=4))
-    nested_data, _ = analyze_directory_recursive(directory)
-    flat_data = get_plot_data(nested_data)
-    plot_directory(flat_data)
-    #print(analyze_directory_recursive(directory))
-    # root.mainloop()
+    dir_in = QtWidgets.QFileDialog.getExistingDirectory(None, "Select Directory")
+    if dir_in:
+        nested_data, _= analyze_directory_recursive(dir_in)
+        flat_data = get_plot_data(nested_data)
+        html_content = plot_directory(flat_data)
+        show_plot(html_content)
 
 if __name__ == "__main__":
     main()
